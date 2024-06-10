@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import re
 from urllib.parse import urlparse, urljoin
 from collections import deque
-
+import time
 # Leer el archivo CSV
 df = pd.read_csv('prestashops_madrid_test.csv')
 
@@ -103,6 +103,7 @@ def crawl_and_scrape(base_url, max_depth=4, max_pages_per_depth=25):
             queue.extend([(link, depth + 1) for link in links_to_visit])
             
             print(f"Subpáginas encontradas: {len(links_to_visit)}")
+            time.sleep(0.75)
         except requests.RequestException as e:
             print(f"Error al acceder a {url}: {e}")
 
