@@ -5,9 +5,11 @@ import re
 from urllib.parse import urlparse, urljoin
 from collections import deque
 import time
-# Leer el archivo CSV
-df = pd.read_csv('prestashops_madrid_test.csv')
 
+# Leer el archivo CSV
+file_path = 'prestashops_madrid_test.csv'
+result_path = file_path.replace('.csv', '_result.csv')
+df = pd.read_csv(file_path)
 # Asegurarse de que estamos trabajando con la columna correcta
 urls = df['Website URL'].tolist()
 
@@ -56,7 +58,7 @@ priority_patterns = [
 ]
 
 # Función para hacer crawling y scraping
-def crawl_and_scrape(base_url, max_depth=4, max_pages_per_depth=25):
+def crawl_and_scrape(base_url, max_depth=3, max_pages_per_depth=15):
     visited = set()
     queue = deque([(base_url, 0)])
     emails = set()
@@ -80,7 +82,7 @@ def crawl_and_scrape(base_url, max_depth=4, max_pages_per_depth=25):
             # Si ya tenemos un correo y un teléfono, dejamos de buscar
             if emails and phones:
                 print(f"Encontrado al menos un correo y un teléfono en {url}. Deteniendo búsqueda.")
-                break
+                return list(emails), list(phones)
 
             soup = BeautifulSoup(content, 'html.parser')
             links = []
@@ -103,7 +105,9 @@ def crawl_and_scrape(base_url, max_depth=4, max_pages_per_depth=25):
             queue.extend([(link, depth + 1) for link in links_to_visit])
             
             print(f"Subpáginas encontradas: {len(links_to_visit)}")
-            time.sleep(0.75)
+            
+            # Añadir una pausa para evitar ser bloqueado por el servidor
+            time.sleep(1)
         except requests.RequestException as e:
             print(f"Error al acceder a {url}: {e}")
 
@@ -121,4 +125,4 @@ for i, url in enumerate(normalized_urls):
 results_df = pd.DataFrame(results)
 
 # Guardar en un nuevo archivo CSV
-results_df.to_csv('resultados_prestashops.csv', index=False)
+results_df.to_csv(result_path, index=False)
